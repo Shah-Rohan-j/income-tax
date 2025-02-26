@@ -2,27 +2,51 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import streamlit as st
 
-def generate_gst_bill(filename, seller_name='', seller_address='', pan_number='', gst_number='', bank_details=''):
+def generate_gst_bill(filename, business_name='', seller_address='', contact_info='', gst_number='', invoice_no='', invoice_date='', due_date='', bill_to='', ship_to='', items=[]):
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
     
     # Title
     c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width / 2, height - 50, "GST Standard Bill")
+    c.drawCentredString(width / 2, height - 50, "Invoice")
     
-    # Seller Details
-    c.setFont("Helvetica", 12)
-    c.drawString(50, height - 100, "Seller Details:")
+    # Business Details
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, height - 80, business_name if business_name else "Business Name")
+    c.setFont("Helvetica", 10)
+    c.drawString(50, height - 100, seller_address if seller_address else "Address")
+    c.drawString(50, height - 115, contact_info if contact_info else "Website, Email Address, Contact Number")
+    c.drawString(50, height - 130, f"GSTIN: {gst_number if gst_number else '________________'}")
     
-    c.drawString(50, height - 130, f"Name: {seller_name if seller_name else '________________'}")
-    c.drawString(50, height - 150, f"Address: {seller_address if seller_address else '________________'}")
-    c.drawString(50, height - 170, f"PAN Number: {pan_number if pan_number else '________________'}")
-    c.drawString(50, height - 190, f"GST Number: {gst_number if gst_number else '________________'}")
-    c.drawString(50, height - 210, f"Bank Details: {bank_details if bank_details else '________________'}")
+    # Invoice Details
+    c.drawString(400, height - 100, f"Invoice No.: {invoice_no if invoice_no else '__________'}")
+    c.drawString(400, height - 115, f"Invoice Date: {invoice_date if invoice_date else '__________'}")
+    c.drawString(400, height - 130, f"Due Date: {due_date if due_date else '__________'}")
     
-    # Placeholder for Bill Items Table (can be extended as needed)
-    c.drawString(50, height - 250, "Bill Items:")
-    c.rect(50, height - 500, width - 100, 200, stroke=1, fill=0)
+    # Billing and Shipping Details
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, height - 160, "BILL TO")
+    c.drawString(300, height - 160, "SHIP TO")
+    c.setFont("Helvetica", 10)
+    c.drawString(50, height - 180, bill_to if bill_to else "Person Name\nBusiness Name\nAddress")
+    c.drawString(300, height - 180, ship_to if ship_to else "Person Name\nBusiness Name\nAddress")
+    
+    # Table Headers
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(50, height - 220, "DESCRIPTION")
+    c.drawString(300, height - 220, "QTY")
+    c.drawString(370, height - 220, "UNIT PRICE")
+    c.drawString(450, height - 220, "TOTAL")
+    
+    # Table Rows
+    y_position = height - 240
+    c.setFont("Helvetica", 10)
+    for item in items:
+        c.drawString(50, y_position, item.get("description", ""))
+        c.drawString(300, y_position, str(item.get("qty", "")))
+        c.drawString(370, y_position, str(item.get("unit_price", "")))
+        c.drawString(450, y_position, str(item.get("total", "")))
+        y_position -= 20
     
     # Footer
     c.setFont("Helvetica", 10)
@@ -32,16 +56,30 @@ def generate_gst_bill(filename, seller_name='', seller_address='', pan_number=''
     print(f"GST bill saved as {filename}")
 
 # Streamlit UI
-st.title("GST Bill Generator")
+st.title("GST Invoice Generator")
 
-seller_name = st.text_input("Seller Name")
+business_name = st.text_input("Business Name")
 seller_address = st.text_area("Seller Address")
-pan_number = st.text_input("PAN Number")
+contact_info = st.text_area("Contact Information")
 gst_number = st.text_input("GST Number")
-bank_details = st.text_area("Bank Details")
+invoice_no = st.text_input("Invoice Number")
+invoice_date = st.date_input("Invoice Date")
+due_date = st.date_input("Due Date")
+bill_to = st.text_area("Bill To")
+ship_to = st.text_area("Ship To")
 
-if st.button("Generate Bill"):
-    filename = "gst_bill.pdf"
-    generate_gst_bill(filename, seller_name, seller_address, pan_number, gst_number, bank_details)
+items = []
+num_items = st.number_input("Number of Items", min_value=1, step=1)
+for i in range(num_items):
+    st.write(f"### Item {i+1}")
+    description = st.text_input(f"Description {i+1}")
+    qty = st.number_input(f"Quantity {i+1}", min_value=1, step=1)
+    unit_price = st.number_input(f"Unit Price {i+1}", min_value=0.0, step=0.01)
+    total = qty * unit_price
+    items.append({"description": description, "qty": qty, "unit_price": unit_price, "total": total})
+
+if st.button("Generate Invoice"):
+    filename = "gst_invoice.pdf"
+    generate_gst_bill(filename, business_name, seller_address, contact_info, gst_number, invoice_no, invoice_date, due_date, bill_to, ship_to, items)
     with open(filename, "rb") as f:
-        st.download_button("Download Bill", f, file_name=filename, mime="application/pdf")
+        st.download_button("Download Invoice", f, file_name=filename, mime="application/pdf")
