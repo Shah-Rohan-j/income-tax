@@ -4,8 +4,11 @@ from reportlab.lib import colors
 import streamlit as st
 import locale
 
-
-
+# Set locale to support Gujarati language
+try:
+    locale.setlocale(locale.LC_ALL, 'gu_IN.UTF-8')
+except locale.Error:
+    st.warning("Gujarati locale not supported on this system. Defaulting to English.")
 
 # List of Indian states
 states = [
@@ -72,13 +75,13 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
         c.drawString(250, y_position, str(item.get("qty", "")))
         c.drawString(300, y_position, str(item.get("unit_price", "")))
         c.drawString(400, y_position, f"{gst_rate}%")
-        c.drawRightString(580, y_position, str(round(total, 2)))
+        c.drawRightString(500, y_position, str(round(total, 2)))
         total_amount += total
         y_position -= 20
     
     # Total Amount
     c.setFont("Helvetica-Bold", 10)
-    c.drawRightString(580, y_position - 20, f"Grand Total: ₹{round(total_amount, 2)}")
+    c.drawRightString(500, y_position - 20, f"Grand Total: ₹{round(total_amount, 2)}")
     
     # Bank Details
     c.setFont("Helvetica-Bold", 12)
