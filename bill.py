@@ -33,10 +33,14 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
     # Billing and Shipping Details
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, height - 210, "BILL TO:")
-    c.drawString(300, height - 210, "SHIP TO:")
     c.setFont("Helvetica", 10)
     c.drawString(50, height - 230, bill_to if bill_to else "Person Name\nBusiness Name\nAddress")
-    c.drawString(300, height - 230, ship_to if ship_to else "Person Name\nBusiness Name\nAddress")
+    
+    if ship_to:
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(300, height - 210, "SHIP TO:")
+        c.setFont("Helvetica", 10)
+        c.drawString(300, height - 230, ship_to)
     
     # Table Headers
     c.setFillColor(colors.lightgrey)
@@ -47,7 +51,7 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
     c.drawString(250, height - 275, "QTY")
     c.drawString(300, height - 275, "UNIT PRICE")
     c.drawString(400, height - 275, "GST %")
-    c.drawString(450, height - 275, "TOTAL")
+    c.drawString(500, height - 275, "TOTAL")
     
     # Table Rows
     y_position = height - 300
@@ -64,7 +68,7 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
         total = price + gst_amount
         
         # Apply CGST+SGST or IGST based on state comparison
-        if seller_state == buyer_state:
+        if seller_state.lower() == buyer_state.lower():
             gst_text = f"CGST {gst_rate/2}% + SGST {gst_rate/2}%"
         else:
             gst_text = f"IGST {gst_rate}%"
@@ -73,7 +77,7 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
         c.drawString(250, y_position, str(item.get("qty", "")))
         c.drawString(300, y_position, str(item.get("unit_price", "")))
         c.drawString(400, y_position, gst_text)
-        c.drawString(450, y_position, str(round(total, 2)))
+        c.drawString(500, y_position, str(round(total, 2)))
         total_amount += total
         y_position -= 20
     
