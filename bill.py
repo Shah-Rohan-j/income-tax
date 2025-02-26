@@ -1,14 +1,24 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
 import streamlit as st
 
 def generate_gst_bill(filename, business_name='', seller_address='', contact_info='', gst_number='', invoice_no='', invoice_date='', due_date='', bill_to='', ship_to='', items=[]):
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
     
-    # Title
+    # Title with color
+    c.setFillColor(colors.blue)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(width / 2, height - 50, "Invoice")
+    c.setFillColor(colors.black)
+    
+    # Draw lines for sections
+    c.line(50, height - 60, width - 50, height - 60)
+    c.line(50, height - 140, width - 50, height - 140)
+    c.line(50, height - 200, width - 50, height - 200)
+    c.line(50, height - 230, width - 50, height - 230)
     
     # Business Details
     c.setFont("Helvetica-Bold", 12)
@@ -23,7 +33,7 @@ def generate_gst_bill(filename, business_name='', seller_address='', contact_inf
     c.drawString(400, height - 115, f"Invoice Date: {invoice_date if invoice_date else '__________'}")
     c.drawString(400, height - 130, f"Due Date: {due_date if due_date else '__________'}")
     
-    # Billing and Shipping Details
+    # Billing and Shipping Details with section headers
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, height - 160, "BILL TO")
     c.drawString(300, height - 160, "SHIP TO")
@@ -31,18 +41,25 @@ def generate_gst_bill(filename, business_name='', seller_address='', contact_inf
     c.drawString(50, height - 180, bill_to if bill_to else "Person Name\nBusiness Name\nAddress")
     c.drawString(300, height - 180, ship_to if ship_to else "Person Name\nBusiness Name\nAddress")
     
-    # Table Headers
+    # Table Headers with color
+    c.setFillColor(colors.lightgrey)
+    c.rect(50, height - 250, width - 100, 20, fill=True, stroke=False)
+    c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(50, height - 220, "DESCRIPTION")
-    c.drawString(300, height - 220, "QTY")
-    c.drawString(370, height - 220, "UNIT PRICE")
-    c.drawString(450, height - 220, "TOTAL")
+    c.drawString(55, height - 245, "DESCRIPTION")
+    c.drawString(300, height - 245, "QTY")
+    c.drawString(370, height - 245, "UNIT PRICE")
+    c.drawString(450, height - 245, "TOTAL")
     
-    # Table Rows
-    y_position = height - 240
+    # Table Rows with alternate shading
+    y_position = height - 270
     c.setFont("Helvetica", 10)
-    for item in items:
-        c.drawString(50, y_position, item.get("description", ""))
+    for index, item in enumerate(items):
+        if index % 2 == 0:
+            c.setFillColor(colors.whitesmoke)
+            c.rect(50, y_position - 5, width - 100, 20, fill=True, stroke=False)
+        c.setFillColor(colors.black)
+        c.drawString(55, y_position, item.get("description", ""))
         c.drawString(300, y_position, str(item.get("qty", "")))
         c.drawString(370, y_position, str(item.get("unit_price", "")))
         c.drawString(450, y_position, str(item.get("total", "")))
