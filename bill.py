@@ -71,13 +71,13 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
         c.drawString(250, y_position, str(item.get("qty", "")))
         c.drawString(300, y_position, str(item.get("unit_price", "")))
         c.drawString(400, y_position, gst_text)
-        c.drawString(500, y_position, str(round(total, 2)))
+        c.drawRightString(580, y_position, str(round(total, 2)))  # Adjusting text alignment to avoid overlap
         total_amount += total
         y_position -= 20
     
     # Total Amount
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(400, y_position - 20, f"Grand Total: ₹{round(total_amount, 2)}")
+    c.drawRightString(580, y_position - 20, f"Grand Total: ₹{round(total_amount, 2)}")
     
     # Bank Details
     c.setFont("Helvetica-Bold", 12)
