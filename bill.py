@@ -5,7 +5,12 @@ import streamlit as st
 import locale
 
 # Set locale to support Gujarati language
-locale.setlocale(locale.LC_ALL, 'gu_IN.UTF-8')
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, 'gu_IN.UTF-8')
+except locale.Error:
+    st.warning("Gujarati locale not supported on this system. Defaulting to English.")
+
 
 # List of Indian states
 states = [
