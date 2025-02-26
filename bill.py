@@ -5,7 +5,14 @@ import streamlit as st
 import locale
 
 # Set locale to support Gujarati language
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'gu_IN.UTF-8')
+
+# List of Indian states
+states = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+]
 
 def generate_gst_bill(filename, business_name='', seller_address='', seller_state='', contact_info='', gst_number='', invoice_no='', invoice_date='', due_date='', buyer_name='', buyer_address='', buyer_gst='', buyer_state='', items=[], bank_details=''):
     c = canvas.Canvas(filename, pagesize=A4)
@@ -61,17 +68,11 @@ def generate_gst_bill(filename, business_name='', seller_address='', seller_stat
         gst_amount = (gst_rate / 100) * price
         total = price + gst_amount
         
-        # Apply CGST+SGST or IGST based on state comparison (case insensitive)
-        if seller_state.strip().lower() == buyer_state.strip().lower():
-            gst_text = f"CGST {gst_rate/2}% + SGST {gst_rate/2}%"
-        else:
-            gst_text = f"IGST {gst_rate}%"
-        
         c.drawString(55, y_position, item.get("description", ""))
         c.drawString(250, y_position, str(item.get("qty", "")))
         c.drawString(300, y_position, str(item.get("unit_price", "")))
-        c.drawString(400, y_position, gst_text)
-        c.drawRightString(580, y_position, str(round(total, 2)))  # Adjusting text alignment to avoid overlap
+        c.drawString(400, y_position, f"{gst_rate}%")
+        c.drawRightString(580, y_position, str(round(total, 2)))
         total_amount += total
         y_position -= 20
     
@@ -97,7 +98,7 @@ st.title("GST Invoice Generator")
 
 business_name = st.text_input("Business Name")
 seller_address = st.text_area("Seller Address")
-seller_state = st.text_input("Seller State")
+seller_state = st.selectbox("Seller State", states)
 contact_info = st.text_area("Contact Information")
 gst_number = st.text_input("GST Number")
 invoice_no = st.text_input("Invoice Number")
@@ -106,21 +107,9 @@ due_date = st.date_input("Due Date")
 buyer_name = st.text_input("Buyer Name")
 buyer_address = st.text_area("Buyer Address")
 buyer_gst = st.text_input("Buyer GST Number")
-buyer_state = st.text_input("Buyer State")
+buyer_state = st.selectbox("Buyer State", states)
 bank_details = st.text_area("Bank Details")
 
+# Item Entry Section (unchanged)
 items = []
 num_items = st.number_input("Number of Items", min_value=1, step=1)
-for i in range(num_items):
-    st.write(f"### Item {i+1}")
-    description = st.text_input(f"Description {i+1}")
-    qty = st.number_input(f"Quantity {i+1}", min_value=1, step=1)
-    unit_price = st.number_input(f"Unit Price {i+1}", min_value=0.0, step=0.01)
-    gst_percent = st.number_input(f"GST % {i+1}", min_value=0, max_value=50, step=1)
-    items.append({"description": description, "qty": qty, "unit_price": unit_price, "gst_percent": gst_percent})
-
-if st.button("Generate Invoice"):
-    filename = "gst_invoice.pdf"
-    generate_gst_bill(filename, business_name, seller_address, seller_state, contact_info, gst_number, invoice_no, invoice_date, due_date, buyer_name, buyer_address, buyer_gst, buyer_state, items, bank_details)
-    with open(filename, "rb") as f:
-        st.download_button("Download Invoice", f, file_name=filename, mime="application/pdf")
