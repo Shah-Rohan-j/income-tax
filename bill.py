@@ -116,3 +116,16 @@ bank_details = st.text_area("Bank Details")
 # Item Entry Section (unchanged)
 items = []
 num_items = st.number_input("Number of Items", min_value=1, step=1)
+for i in range(num_items):
+    st.write(f"### Item {i+1}")
+    description = st.text_input(f"Description {i+1}")
+    qty = st.number_input(f"Quantity {i+1}", min_value=1, step=1)
+    unit_price = st.number_input(f"Unit Price {i+1}", min_value=0.0, step=0.01)
+    gst_percent = st.number_input(f"GST % {i+1}", min_value=0, max_value=50, step=1)
+    items.append({"description": description, "qty": qty, "unit_price": unit_price, "gst_percent": gst_percent})
+
+if st.button("Generate Invoice"):
+    filename = "gst_invoice.pdf"
+    generate_gst_bill(filename, business_name, seller_address, seller_state, contact_info, gst_number, invoice_no, invoice_date, due_date, buyer_name, buyer_address, buyer_gst, buyer_state, items, bank_details)
+    with open(filename, "rb") as f:
+        st.download_button("Download Invoice", f, file_name=filename, mime="application/pdf")
